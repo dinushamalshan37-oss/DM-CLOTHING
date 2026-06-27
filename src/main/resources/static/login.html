@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | DM Clothing</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="main-header">
+    <a href="index.html" class="logo">DM CLOTHING</a>
+
+    <nav class="main-nav">
+        <a href="index.html">SHOP</a>
+        <a href="index.html#shop">SHIRTS</a>
+        <a href="index.html#shop">SHORTS</a>
+        <a href="index.html#shop">PANTS</a>
+        <a href="index.html#shop">CAPS</a>
+        <a href="index.html#shop">SHOES</a>
+    </nav>
+
+    <div class="header-actions">
+        <a href="login.html">ACCOUNT</a>
+        <a href="cart.html">CART</a>
+    </div>
+</header>
+
+<section class="login-screen">
+    <div class="login-hero-text">
+        <h1>BE BETTER<br>EVERYDAY</h1>
+        <p>Login to continue your premium DM Clothing shopping experience.</p>
+    </div>
+
+    <div class="login-card">
+        <h2>Customer Login</h2>
+        <p>Welcome back. Please sign in to continue.</p>
+
+        <input type="email" id="loginEmail" placeholder="Email address">
+        <input type="password" id="loginPassword" placeholder="Password">
+
+        <button onclick="loginCustomer()">SIGN IN</button>
+
+        <div class="login-bottom">
+            Don’t have an account?
+            <a href="register.html">Create Account</a>
+        </div>
+    </div>
+</section>
+
+<script>
+const API_URL = "http://localhost:8080/api";
+
+function loginCustomer() {
+    const data = {
+        email: document.getElementById("loginEmail").value,
+        password: document.getElementById("loginPassword").value
+    };
+
+    fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    })
+    .then(res => res.text())
+    .then(msg => {
+        alert(msg);
+
+        if (msg.includes("Customer ID:")) {
+            const customerId = msg.split("Customer ID:")[1].trim();
+            localStorage.setItem("customerId", customerId);
+            window.location.href = "index.html";
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Login error");
+    });
+}
+</script>
+
+</body>
+</html>

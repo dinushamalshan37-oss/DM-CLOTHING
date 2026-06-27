@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DM Clothing</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="main-header">
+    <a href="index.html" class="logo">DM CLOTHING</a>
+
+    <nav class="main-nav">
+        <a href="index.html">SHOP</a>
+        <a href="#" onclick="filterProducts('shirts')">SHIRTS</a>
+        <a href="#" onclick="filterProducts('shorts')">SHORTS</a>
+        <a href="#" onclick="filterProducts('long pants')">PANTS</a>
+        <a href="#" onclick="filterProducts('caps')">CAPS</a>
+        <a href="#" onclick="filterProducts('shoes')">SHOES</a>
+    </nav>
+
+   <div class="header-actions">
+    <button onclick="searchProducts()">SEARCH</button>
+    <a href="login.html">CUSTOMER</a>
+    <a href="owner.html">OWNER</a>
+    <a href="cart.html">CART</a>
+    <button onclick="logout()">LOGOUT</button>
+</div>
+</header>
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>BE BETTER EVERYDAY</h1>
+        <p>Explore the latest DM Clothing collection.</p>
+        <div class="hero-buttons">
+            <a href="#shop">SHOP NOW</a>
+            <a href="cart.html">VIEW CART</a>
+        </div>
+    </div>
+</section>
+
+<section id="shop" class="collection">
+    <div class="collection-top">
+        <h2>SHOP COLLECTION</h2>
+
+        <select onchange="sortProducts(this.value)">
+            <option value="featured">Featured</option>
+            <option value="low">Price Low to High</option>
+            <option value="high">Price High to Low</option>
+        </select>
+    </div>
+
+    <div class="filter-bar">
+        <button onclick="filterProducts('all')">ALL</button>
+        <button onclick="filterProducts('shirts')">SHIRTS</button>
+        <button onclick="filterProducts('shorts')">SHORTS</button>
+        <button onclick="filterProducts('long pants')">LONG PANTS</button>
+        <button onclick="filterProducts('caps')">CAPS</button>
+        <button onclick="filterProducts('shoes')">SHOES</button>
+    </div>
+
+    <p id="productCount" class="product-count"></p>
+    <div id="products" class="product-grid"></div>
+</section>
+
+<div id="productModal" class="product-modal hidden">
+    <button class="close-btn" onclick="closeProduct()">×</button>
+
+    <div class="modal-left">
+        <img id="modalImage" src="" alt="">
+    </div>
+
+    <div class="modal-right">
+        <p id="modalCategory" class="modal-category"></p>
+        <h2 id="modalName"></h2>
+        <h3 id="modalPrice"></h3>
+        <p class="pay-text">or with 3 installments available</p>
+
+        <label>Color</label>
+        <select id="modalColor"></select>
+
+        <label>Size</label>
+        <select id="modalSize"></select>
+
+        <label>Quantity</label>
+        <input type="number" id="modalQty" value="1" min="1">
+
+        <button class="add-cart-btn" onclick="addModalToCart()">ADD TO CART</button>
+
+        <div class="info-box">
+            <h4>Product details</h4>
+            <p>Premium DM Clothing item with modern streetwear style.</p>
+        </div>
+
+        <div class="service-box">Free standard shipping over LKR 20,000</div>
+        <div class="service-box">Free & Easy returns</div>
+    </div>
+</div>
+
+<footer class="footer">
+    <h1>DM CLOTHING</h1>
+
+    <div class="footer-grid">
+        <div>
+            <h3>Sign up now</h3>
+            <p>Notifications you won’t want to ignore.</p>
+            <input type="email" placeholder="Email address">
+        </div>
+
+        <div>
+            <h4>Shop</h4>
+            <p>Shirts</p>
+            <p>Shorts</p>
+            <p>Long Pants</p>
+            <p>Caps</p>
+            <p>Shoes</p>
+        </div>
+
+        <div>
+            <h4>Information</h4>
+            <p>Contact Us</p>
+            <p>Shipping Policy</p>
+            <p>Returns & Exchanges</p>
+            <p>FAQ</p>
+        </div>
+    </div>
+
+    <p class="tagline">BE BETTER EVERYDAY</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Account | DM Clothing</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="main-header">
+    <a href="index.html" class="logo">DM CLOTHING</a>
+
+    <nav class="main-nav">
+        <a href="index.html">SHOP</a>
+        <a href="index.html#shop">SHIRTS</a>
+        <a href="index.html#shop">SHORTS</a>
+        <a href="index.html#shop">PANTS</a>
+        <a href="index.html#shop">CAPS</a>
+        <a href="index.html#shop">SHOES</a>
+    </nav>
+
+    <div class="header-actions">
+        <a href="login.html">LOGIN</a>
+        <a href="cart.html">CART</a>
+    </div>
+</header>
+
+<section class="register-screen">
+    <div class="register-left">
+        <h1>CREATE YOUR<br>STYLE</h1>
+        <p>Register your DM Clothing account and verify OTP to start shopping.</p>
+    </div>
+
+    <div class="register-card" id="registerBox">
+        <h2>Create Account</h2>
+        <p>Enter your details below</p>
+
+        <input type="text" id="regName" placeholder="Full name">
+        <input type="email" id="regEmail" placeholder="Email address">
+        <input type="text" id="regPhone" placeholder="Phone number">
+        <input type="password" id="regPassword" placeholder="Password">
+
+        <button onclick="registerCustomer()">CREATE ACCOUNT</button>
+
+        <div class="register-bottom">
+            Already have an account?
+            <a href="login.html">Login</a>
+        </div>
+    </div>
+
+    <div class="register-card hidden" id="otpBox">
+        <h2>Verify OTP</h2>
+        <p>Check Spring Boot terminal and enter OTP</p>
+
+        <input type="email" id="otpEmail" placeholder="Email address">
+        <input type="text" id="otpCode" placeholder="OTP code">
+
+        <button onclick="verifyOtp()">VERIFY OTP</button>
+    </div>
+</section>
+
+<script>
+const API_URL = "http://localhost:8080/api";
+
+function registerCustomer() {
+    const data = {
+        name: document.getElementById("regName").value,
+        email: document.getElementById("regEmail").value,
+        phone: document.getElementById("regPhone").value,
+        password: document.getElementById("regPassword").value
+    };
+
+    fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    })
+    .then(res => res.text())
+    .then(msg => {
+        alert(msg);
+
+        document.getElementById("otpEmail").value = data.email;
+        document.getElementById("registerBox").classList.add("hidden");
+        document.getElementById("otpBox").classList.remove("hidden");
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Register error");
+    });
+}
+
+function verifyOtp() {
+    const data = {
+        email: document.getElementById("otpEmail").value,
+        otp: document.getElementById("otpCode").value
+    };
+
+    fetch(`${API_URL}/auth/verify-otp`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    })
+    .then(res => res.text())
+    .then(msg => {
+        alert(msg);
+
+        if (msg.includes("successfully")) {
+            window.location.href = "login.html";
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("OTP verify error");
+    });
+}
+</script>
+
+</body>
+</html>

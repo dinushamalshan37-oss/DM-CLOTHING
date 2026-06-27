@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Owner Dashboard | DM Clothing</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="owner-body">
+
+<header class="owner-topbar">
+    <a href="index.html" class="owner-logo">DM CLOTHING</a>
+
+    <nav>
+        <a href="#dashboard">DASHBOARD</a>
+        <a href="#products">ADD PRODUCT</a>
+        <a href="#orders">ORDERS</a>
+        <a href="#lowStock">LOW STOCK</a>
+        <button onclick="ownerLogout()">LOGOUT</button>
+    </nav>
+</header>
+
+<section id="dashboard" class="owner-dashboard">
+    <div class="owner-title">
+        <h1>OWNER DASHBOARD</h1>
+        <p>Manage monthly sales, products, stock and customer orders</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <p>Monthly Sales</p>
+            <h2>LKR <span id="monthlySales">0</span></h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Total Orders</p>
+            <h2 id="totalOrders">0</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Pending Orders</p>
+            <h2 id="pendingOrders">0</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Processing Orders</p>
+            <h2 id="processingOrders">0</h2>
+        </div>
+
+        <div class="stat-card">
+            <p>Delivery Orders</p>
+            <h2 id="deliveryOrders">0</h2>
+        </div>
+
+        <div class="stat-card danger-stat">
+            <p>Low Stock Items</p>
+            <h2 id="lowStockCount">0</h2>
+        </div>
+    </div>
+</section>
+
+<section id="products" class="owner-section">
+    <h2>ADD NEW PRODUCT</h2>
+
+    <div class="owner-form">
+        <input type="text" id="productName" placeholder="Product Name">
+        <input type="text" id="category" placeholder="Category: shirts / shorts / long pants / caps / shoes">
+        <input type="text" id="size" placeholder="Sizes: S,M,L,XL">
+        <input type="text" id="colors" placeholder="Colors: Black,White,Blue">
+        <input type="number" id="price" placeholder="Price">
+        <input type="number" id="stock" placeholder="Stock">
+        <input type="text" id="image" placeholder="Image: images/black-shirt.png">
+
+        <button onclick="addProduct()">ADD PRODUCT</button>
+    </div>
+</section>
+
+<section id="orders" class="owner-section">
+    <div class="section-head">
+        <h2>CUSTOMER ORDERS</h2>
+        <button onclick="loadOrders()">REFRESH</button>
+    </div>
+
+    <div id="ordersBox" class="orders-list"></div>
+</section>
+
+<section id="lowStock" class="owner-section">
+    <div class="section-head">
+        <h2>LOW STOCK ITEMS</h2>
+        <button onclick="loadLowStock()">REFRESH</button>
+    </div>
+
+    <div id="lowStockBox" class="low-stock-list"></div>
+</section>
+
+<script>
+const API_URL = "http://localhost:8080/api";
+const ownerId = localStorage.getItem("ownerId");
+
+if (!ownerId) {
+    alert("Please owner login first");
+    window.location.href = "owner.html";
+}
+
+loadDashboard();
+loadOrders();
+loadLowStock();
+
+function loadDashboard() {
+    fetch(`${API_URL}/owner/dashboard-stats`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("monthlySales").innerText = Number(data.monthlySales).toLocaleString();
+            document.getElementById("totalOrders").innerText = data.totalOrders;
+            document.getElementById("pendingOrders").innerText = data.pendingOrders;
+            document.getElementById("processingOrders").innerText = data.processingOrders;
+            document.getElementById("deliveryOrders").innerText = data.deliveryOrders;
+            document.getElementById("lowStockCount").innerText = data.lowStockCount;
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Dashboard load error");
+        });
+}
+
+function addProduct() {
+    const data = {
+        productName: document.getElementById("productName").value,
+        category: document.getElementById("category").value,
+        size: document.getElementById("size").value,
+        colors: document.getElementById("colors").value,
+        price: Number(document.getElementById("price").value),
+        stock: Number(document.getElementById("stock").value),
+        image: document.getElementById("image").value
+    };
+
+    fetch(`${API_URL}/owner/products`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(product => {
+        alert("Product added successfully");
+        clearProductForm();
+        loadDashboard();
+        loadLowStock();
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Product add error");
+    });
+}
+
+function clearProductForm() {
+    document.getElementById("productName").value = "";
+    document.getElementById("category").value = "";
+    document.getElementById("size").value = "";
+    document.getElementById("colors").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("stock").value = "";
+    document.getElementById("image").value = "";
+}
+
+async function loadOrders() {
+    const ordersRes = await fetch(`${API_URL}/owner/orders-details`);
+    const ordersData = await ordersRes.json();
+
+    const productsRes = await fetch(`${API_URL}/products`);
+    const products = await productsRes.json();
+
+    const box = document.getElementById("ordersBox");
+    box.innerHTML = "";
+
+    if (ordersData.length === 0) {
+        box.innerHTML = "<p>No orders found.</p>";
+        return;
+    }
+
+    ordersData.forEach(item => {
+        const order = item.order;
+        const orderItems = item.items || [];
+
+        box.innerHTML += `
+            <div class="premium-order-card">
+                <div class="premium-order-header">
+                    <div>
+                        <h3>Order #${order.orderId}</h3>
+                        <p>${order.orderDate}</p>
+                    </div>
+
+                    <span class="order-status ${order.orderStatus.toLowerCase()}">
+                        ${order.orderStatus}
+                    </span>
+                </div>
+
+                <div class="premium-order-body">
+                    <div class="customer-box">
+                        <h4>Customer Details</h4>
+                        <p><b>Name:</b> ${item.customerName}</p>
+                        <p><b>Email:</b> ${item.customerEmail}</p>
+                        <p><b>Phone:</b> ${item.customerPhone}</p>
+                        <p><b>City:</b> ${order.city}</p>
+                        <p><b>Address:</b> ${order.address}</p>
+                    </div>
+
+                    <div class="payment-box">
+                        <h4>Payment Details</h4>
+                        <h2>LKR ${Number(order.totalAmount).toLocaleString()}.00</h2>
+                        <p><b>Payment:</b> ${order.paymentMethod}</p>
+
+                        <select id="status-${order.orderId}">
+                            ${statusOptions(order.orderStatus)}
+                        </select>
+
+                        <button onclick="updateStatus(${order.orderId})">UPDATE STATUS</button>
+                    </div>
+                </div>
+
+                <div class="premium-items-section">
+                    <h4>Order Items</h4>
+
+                    <div class="premium-items-grid">
+                        ${orderItems.map(orderItem => {
+                            const product = products.find(p => p.productId === orderItem.productId);
+
+                            const productName = product ? product.productName : "Product ID " + orderItem.productId;
+                            const productImage = product ? product.image : "https://placehold.co/200x200/f2f2f2/111?text=DM";
+
+                            return `
+                                <div class="premium-order-item">
+                                    <div class="order-item-img">
+                                        <img src="${productImage}" 
+                                             onerror="this.src='https://placehold.co/200x200/f2f2f2/111?text=DM'">
+                                    </div>
+
+                                    <div class="order-item-info">
+                                        <h5>${productName}</h5>
+                                        <p>Color: ${orderItem.selectedColor}</p>
+                                        <p>Size: ${orderItem.selectedSize}</p>
+                                        <p>Quantity: ${orderItem.quantity}</p>
+                                        <h6>LKR ${Number(orderItem.subtotal).toLocaleString()}.00</h6>
+                                    </div>
+                                </div>
+                            `;
+                        }).join("")}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function statusOptions(currentStatus) {
+    const statuses = ["Pending", "Processing", "Delivery", "Completed"];
+
+    return statuses.map(status => {
+        const selected = status === currentStatus ? "selected" : "";
+        return `<option value="${status}" ${selected}>${status}</option>`;
+    }).join("");
+}
+
+function updateStatus(orderId) {
+    const status = document.getElementById(`status-${orderId}`).value;
+
+    fetch(`${API_URL}/owner/orders/${orderId}/status`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ orderStatus: status })
+    })
+    .then(res => res.text())
+    .then(msg => {
+        alert(msg);
+        loadDashboard();
+        loadOrders();
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Status update error");
+    });
+}
+
+function loadLowStock() {
+    fetch(`${API_URL}/owner/low-stock`)
+        .then(res => res.json())
+        .then(products => {
+            const box = document.getElementById("lowStockBox");
+            box.innerHTML = "";
+
+            if (products.length === 0) {
+                box.innerHTML = "<p class='success-msg'>No low stock items. Stock is healthy.</p>";
+                return;
+            }
+
+            products.forEach(product => {
+                box.innerHTML += `
+                    <div class="stock-card">
+                        <h3>${product.productName}</h3>
+                        <p>Category: ${product.category}</p>
+                        <p>Price: LKR ${Number(product.price).toLocaleString()}</p>
+                        <h4>Stock Left: ${product.stock}</h4>
+                    </div>
+                `;
+            });
+        });
+}
+
+function ownerLogout() {
+    localStorage.removeItem("ownerId");
+    alert("Owner logout successful");
+    window.location.href = "owner.html";
+}
+</script>
+
+</body>
+</html>

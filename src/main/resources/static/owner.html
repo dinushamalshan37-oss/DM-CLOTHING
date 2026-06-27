@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Owner Login | DM Clothing</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="main-header">
+    <a href="index.html" class="logo">DM CLOTHING</a>
+
+    <nav class="main-nav">
+        <a href="index.html">SHOP</a>
+        <a href="index.html#shop">SHIRTS</a>
+        <a href="index.html#shop">SHORTS</a>
+        <a href="index.html#shop">PANTS</a>
+        <a href="index.html#shop">CAPS</a>
+        <a href="index.html#shop">SHOES</a>
+    </nav>
+
+    <div class="header-actions">
+        <a href="login.html">CUSTOMER</a>
+        <a href="owner-register.html">REGISTER</a>
+    </div>
+</header>
+
+<section class="login-screen">
+    <div class="login-hero-text">
+        <h1>OWNER<br>PANEL</h1>
+        <p>Login as owner to manage products, orders, monthly sales and stock.</p>
+    </div>
+
+    <div class="login-card">
+        <h2>Owner Login</h2>
+        <p>Enter your owner username and password</p>
+
+        <input type="text" id="ownerUsername" placeholder="Owner username">
+        <input type="password" id="ownerPassword" placeholder="Password">
+
+        <button onclick="ownerLogin()">SIGN IN</button>
+
+        <div class="login-bottom">
+            No owner account?
+            <a href="owner-register.html">Create Owner Account</a>
+        </div>
+    </div>
+</section>
+
+<script>
+const API_URL = "http://localhost:8080/api";
+
+function ownerLogin() {
+    const data = {
+        username: document.getElementById("ownerUsername").value,
+        password: document.getElementById("ownerPassword").value
+    };
+
+    fetch(`${API_URL}/auth/owner-login`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    })
+    .then(res => res.text())
+    .then(msg => {
+        alert(msg);
+
+        if (msg.includes("Owner ID:")) {
+            const ownerId = msg.split("Owner ID:")[1].trim();
+            localStorage.setItem("ownerId", ownerId);
+            window.location.href = "owner-dashboard.html";
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Owner login error");
+    });
+}
+</script>
+
+</body>
+</html>

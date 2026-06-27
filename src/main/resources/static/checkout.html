@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout | DM Clothing</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="checkout-dark">
+
+<header class="main-header">
+    <a href="index.html" class="logo">DM CLOTHING</a>
+
+    <nav class="main-nav">
+        <a href="index.html">SHOP</a>
+        <a href="index.html#shop">SHIRTS</a>
+        <a href="index.html#shop">SHORTS</a>
+        <a href="index.html#shop">PANTS</a>
+        <a href="index.html#shop">CAPS</a>
+        <a href="index.html#shop">SHOES</a>
+    </nav>
+
+    <div class="header-actions">
+        <a href="login.html">CUSTOMER</a>
+        <a href="owner.html">OWNER</a>
+        <a href="cart.html">CART</a>
+    </div>
+</header>
+
+<section class="checkout-page">
+    <div class="checkout-left">
+        <h1>CHECKOUT</h1>
+        <p class="checkout-sub">Complete your DM Clothing order</p>
+
+        <div class="checkout-box">
+            <h2>Contact</h2>
+            <input type="text" id="phone" placeholder="Phone number">
+        </div>
+
+        <div class="checkout-box">
+            <h2>Delivery</h2>
+
+            <select class="checkout-input">
+                <option>Sri Lanka</option>
+            </select>
+
+            <div class="two-inputs">
+                <input type="text" id="firstName" placeholder="First name">
+                <input type="text" id="lastName" placeholder="Last name">
+            </div>
+
+            <input type="text" id="address" placeholder="Address">
+            <input type="text" id="apartment" placeholder="Apartment, suite, etc. optional">
+
+            <div class="two-inputs">
+                <input type="text" id="city" placeholder="City">
+                <input type="text" id="postalCode" placeholder="Postal code optional">
+            </div>
+
+            <div class="two-inputs">
+                <input type="text" id="latitude" placeholder="Latitude optional">
+                <input type="text" id="longitude" placeholder="Longitude optional">
+            </div>
+        </div>
+
+        <div class="checkout-box">
+            <h2>Shipping method</h2>
+            <div class="shipping-card">
+                <div>
+                    <b>Standard</b>
+                    <p>3 - 12 Business Days</p>
+                </div>
+                <b>LKR 399.00</b>
+            </div>
+        </div>
+
+        <div class="checkout-box">
+            <h2>Payment</h2>
+            <p class="small-text">All transactions are secure and encrypted.</p>
+
+            <select id="paymentMethod" class="checkout-input" onchange="toggleCardBox()">
+                <option value="Cash on Delivery">Cash on Delivery</option>
+                <option value="Card Payment">Card Payment</option>
+            </select>
+
+            <div id="cardBox" class="card-box hidden">
+                <input type="text" placeholder="Card number">
+                <div class="two-inputs">
+                    <input type="text" placeholder="Expiration date MM / YY">
+                    <input type="text" placeholder="Security code">
+                </div>
+                <input type="text" placeholder="Name on card">
+            </div>
+        </div>
+
+        <button class="pay-btn" onclick="placeOrder()">PLACE ORDER</button>
+
+        <div class="checkout-links">
+            <a href="#">Refund policy</a>
+            <a href="#">Shipping</a>
+            <a href="#">Contact</a>
+        </div>
+    </div>
+
+    <div class="checkout-right">
+        <h2>Order Summary</h2>
+
+        <div id="summaryItems"></div>
+
+        <div class="discount-row">
+            <input type="text" placeholder="Discount code or gift card">
+            <button>Apply</button>
+        </div>
+
+        <div class="summary-line">
+            <span>Subtotal</span>
+            <b>LKR <span id="subTotal">0</span></b>
+        </div>
+
+        <div class="summary-line">
+            <span>Shipping</span>
+            <b>LKR 399</b>
+        </div>
+
+        <div class="summary-total-line">
+            <span>Total</span>
+            <b>LKR <span id="grandTotal">0</span></b>
+        </div>
+    </div>
+</section>
+
+<script>
+const API_URL = "http://localhost:8080/api";
+const customerId = localStorage.getItem("customerId");
+
+if (!customerId) {
+    alert("Please login first");
+    window.location.href = "login.html";
+}
+
+loadCheckoutSummary();
+
+async function loadCheckoutSummary() {
+    const cartRes = await fetch(`${API_URL}/cart/customer/${customerId}`);
+    const cartItems = await cartRes.json();
+
+    const productRes = await fetch(`${API_URL}/products`);
+    const products = await productRes.json();
+
+    const summaryBox = document.getElementById("summaryItems");
+    const subTotalBox = document.getElementById("subTotal");
+    const grandTotalBox = document.getElementById("grandTotal");
+
+    summaryBox.innerHTML = "";
+    let total = 0;
+
+    if (cartItems.length === 0) {
+        summaryBox.innerHTML = "<p>Your cart is empty.</p>";
+        subTotalBox.innerText = "0";
+        grandTotalBox.innerText = "0";
+        return;
+    }
+
+    cartItems.forEach(item => {
+        const product = products.find(p => p.productId === item.productId);
+        if (!product) return;
+
+        const subtotal = product.price * item.quantity;
+        total += subtotal;
+
+        summaryBox.innerHTML += `
+            <div class="summary-product">
+                <div class="summary-img">
+                    <img src="${product.image}" onerror="this.src='https://placehold.co/120x120/f2f2f2/111?text=DM'">
+                    <span>${item.quantity}</span>
+                </div>
+
+                <div>
+                    <h3>${product.productName}</h3>
+                    <p>${item.selectedColor} / ${item.selectedSize}</p>
+                </div>
+
+                <b>LKR ${Number(subtotal).toLocaleString()}</b>
+            </div>
+        `;
+    });
+
+    subTotalBox.innerText = Number(total).toLocaleString();
+    grandTotalBox.innerText = Number(total + 399).toLocaleString();
+}
+
+function toggleCardBox() {
+    const paymentMethod = document.getElementById("paymentMethod").value;
+    const cardBox = document.getElementById("cardBox");
+
+    if (paymentMethod === "Card Payment") {
+        cardBox.classList.remove("hidden");
+    } else {
+        cardBox.classList.add("hidden");
+    }
+}
+
+function placeOrder() {
+    const fullAddress =
+        document.getElementById("address").value + " " +
+        document.getElementById("apartment").value;
+
+    const data = {
+        customerId: Number(customerId),
+        phone: document.getElementById("phone").value,
+        city: document.getElementById("city").value,
+        address: fullAddress,
+        latitude: document.getElementById("latitude").value,
+        longitude: document.getElementById("longitude").value,
+        paymentMethod: document.getElementById("paymentMethod").value
+    };
+
+    fetch(`${API_URL}/orders/checkout`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    })
+    .then(res => res.text())
+    .then(msg => {
+        alert(msg);
+
+        if (msg.includes("Order placed successfully")) {
+            window.location.href = "index.html";
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Checkout error");
+    });
+}
+</script>
+
+</body>
+</html>

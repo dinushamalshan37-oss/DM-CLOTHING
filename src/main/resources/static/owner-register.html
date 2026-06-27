@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Owner Register | DM Clothing</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="main-header">
+    <a href="index.html" class="logo">DM CLOTHING</a>
+
+    <nav class="main-nav">
+        <a href="index.html">SHOP</a>
+        <a href="index.html#shop">SHIRTS</a>
+        <a href="index.html#shop">SHORTS</a>
+        <a href="index.html#shop">PANTS</a>
+        <a href="index.html#shop">CAPS</a>
+        <a href="index.html#shop">SHOES</a>
+    </nav>
+
+    <div class="header-actions">
+        <a href="owner.html">OWNER LOGIN</a>
+        <a href="index.html">SHOP</a>
+    </div>
+</header>
+
+<section class="register-screen">
+    <div class="register-left">
+        <h1>CREATE OWNER<br>ACCOUNT</h1>
+        <p>Register owner account to manage products, orders, sales and stock.</p>
+    </div>
+
+    <div class="register-card">
+        <h2>Owner Register</h2>
+        <p>Create your owner account</p>
+
+        <input type="text" id="ownerUsername" placeholder="Owner username">
+        <input type="password" id="ownerPassword" placeholder="Password">
+
+        <button onclick="ownerRegister()">CREATE OWNER ACCOUNT</button>
+
+        <div class="register-bottom">
+            Already have an owner account?
+            <a href="owner.html">Owner Login</a>
+        </div>
+    </div>
+</section>
+
+<script>
+const API_URL = "http://localhost:8080/api";
+
+function ownerRegister() {
+    const data = {
+        username: document.getElementById("ownerUsername").value,
+        password: document.getElementById("ownerPassword").value
+    };
+
+    fetch(`${API_URL}/auth/owner-register`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    })
+    .then(res => res.text())
+    .then(msg => {
+        alert(msg);
+
+        if (msg.includes("successfully")) {
+            window.location.href = "owner.html";
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Owner register error");
+    });
+}
+</script>
+
+</body>
+</html>
